@@ -12,6 +12,7 @@ Please remove `dangerouslyAllowBrowser: true` from the options before using in p
 | `openai/` | OpenAI | `openai` + `@grepture/sdk` |
 | `anthropic/` | Anthropic | `@anthropic-ai/sdk` + `@grepture/sdk` |
 | `gemini/` | Google Gemini | `@google/genai` (custom fetch) |
+| `vercel-ai-sdk/` | Vercel AI SDK | `ai` + `@ai-sdk/openai` + `@grepture/sdk` |
 
 ## Running
 
