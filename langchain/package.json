@@ -1,0 +1,29 @@
+{
+  "name": "@grepture/example-langchain",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@grepture/sdk": "file:../../sdk",
+    "@langchain/openai": "^0.5.0",
+    "@langchain/core": "^0.3.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4",
+    "typescript": "^5",
+    "vite": "^6",
+    "tailwindcss": "^4",
+    "@tailwindcss/vite": "^4"
+  }
+}

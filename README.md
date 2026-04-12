@@ -13,6 +13,16 @@ Please remove `dangerouslyAllowBrowser: true` from the options before using in p
 | `anthropic/` | Anthropic | `@anthropic-ai/sdk` + `@grepture/sdk` |
 | `gemini/` | Google Gemini | `@google/genai` (custom fetch) |
 | `vercel-ai-sdk/` | Vercel AI SDK | `ai` + `@ai-sdk/openai` + `@grepture/sdk` |
+| `stored-keys/` | Stored provider keys | `openai` + `@anthropic-ai/sdk` + `@grepture/sdk` |
+
+### stored-keys
+
+Shows how to use Grepture's stored provider keys — no OpenAI/Anthropic key in
+your client code at all. Configure keys in Settings → API → Provider Keys, then
+omit `apiKey` from `grepture.clientOptions()`. The proxy resolves the team's
+stored key for the detected provider and automatically fails over to any
+configured fallback chain on 5xx (including cross-provider fallback with
+on-the-fly request/response translation).
 
 ## Running
 

@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import OpenAI from "openai";
+import { ChatOpenAI } from "@langchain/openai";
+import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { Grepture } from "@grepture/sdk";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
@@ -67,14 +68,20 @@ export default function App() {
       grepture.setTraceId(newTraceId);
 
       // Attach metadata to every request in this trace
-      grepture.setMetadata({ pipeline: "support-ticket", source: "example-app" });
+      grepture.setMetadata({ pipeline: "support-ticket", source: "langchain-example" });
 
-      const client = new OpenAI({
-        ...grepture.clientOptions({
-          apiKey: openaiKey,
-          baseURL: "https://api.openai.com/v1",
-        }),
-        dangerouslyAllowBrowser: true,
+      const opts = grepture.clientOptions({
+        apiKey: openaiKey,
+        baseURL: "https://api.openai.com/v1",
+      });
+
+      const model = new ChatOpenAI({
+        model: "gpt-4o",
+        apiKey: opts.apiKey,
+        configuration: {
+          baseURL: opts.baseURL,
+          fetch: opts.fetch,
+        },
       });
 
       let previousResult = "";
@@ -93,26 +100,24 @@ export default function App() {
             ? step.promptFn(previousResult)
             : step.prompt!;
 
-        const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] =
-          [];
-        if ("system" in step && step.system) {
-          messages.push({ role: "system", content: step.system });
-        }
-        messages.push({ role: "user", content: userContent });
-
         // Label each request so it's identifiable inside the trace
         grepture.setLabel(step.label);
 
-        const response = await client.chat.completions.create({
-          model: "gpt-4o",
-          messages,
-        });
+        const messages = [];
+        if ("system" in step && step.system) {
+          messages.push(new SystemMessage(step.system));
+        }
+        messages.push(new HumanMessage(userContent));
 
-        const result = response.choices[0]?.message?.content ?? "";
+        const response = await model.invoke(messages);
+
+        const result = typeof response.content === "string"
+          ? response.content
+          : JSON.stringify(response.content);
         previousResult = result;
 
         // Log a custom event marking step completion
-        grepture.log(`${step.label}-done`, { tokens: response.usage?.total_tokens });
+        grepture.log(`${step.label}-done`, { chars: result.length });
 
         setSteps((prev) =>
           prev.map((s, idx) =>
@@ -121,7 +126,7 @@ export default function App() {
         );
       }
 
-      // Flush to ensure all log events are sent before the page navigates away
+      // Flush to ensure all log events are sent
       await grepture.flush();
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -141,15 +146,15 @@ export default function App() {
         <div className="flex items-center gap-3">
           <span className="text-accent font-bold">[grepture]</span>
           <span className="text-muted-foreground">+</span>
-          <span className="font-semibold">Tracing Example</span>
+          <span className="font-semibold">LangChain Example</span>
         </div>
 
         <p className="text-sm text-muted-foreground">
-          This example runs a 3-step AI pipeline (extract &rarr; draft &rarr;
-          review) and groups all requests under a single trace ID. Each step
-          is labeled so you can identify it inside the trace. View the
-          grouped trace in your Grepture dashboard under Traffic Log &rarr;
-          Traces.
+          This example runs a 3-step AI pipeline using LangChain&apos;s{" "}
+          <code className="text-xs bg-muted px-1 py-0.5 rounded">ChatOpenAI</code>{" "}
+          and groups all requests under a single trace with labels, metadata,
+          and custom log events. View the trace in your Grepture dashboard
+          under Traffic Log &rarr; Traces.
         </p>
 
         <Card>
